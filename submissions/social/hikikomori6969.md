@@ -1,4 +1,4 @@
-# vApp Submission: **zkBeacon Fair Draw**
+# vApp Submission: **Anonymous Proof of Participation**
 
 ## Verification
 ```yaml
@@ -16,71 +16,62 @@ timestamp: "2025-08-23"
 ## Project
 
 ### Name & Category
-- **Project**: zkBeacon Fair Draw  
+- **Project**: Anonymous Proof of Participation  
 - **Category**: Social  
 
 ### Description
-**Problem**: Traditional online lotteries or draws rely heavily on trusting the organizer’s code execution or random number generator. This creates opportunities for manipulation, lack of transparency, and loss of user trust.  
+**Problem**: Right now if you join an event onchain, its always tied to your wallet. That means anyone can just look and see all the stuff you did, what events you went to, even connect it to your other wallets. It's kinda bad for privacy, because maybe you just wanna join some random community call or testnet event but dont want it forever stuck to your main address.  
 
-**Solution**: zkBeacon Fair Draw introduces a **verifiable, zero-knowledge powered draw system**. Winners are selected deterministically using a mix of a secret seed and an unpredictable public randomness beacon (e.g., drand).  
-- Zero-knowledge proofs guarantee that winners are computed correctly.  
-- Participants and observers can independently verify fairness through published proofs and attestations.  
-- Personal data and the organizer’s private seed remain confidential.  
+**Solution**: Anonymous PoP will let a user scan a QR during an event, then generate a zk proof they were there. Later they can show that proof to claim perks or access a channel but it won’t reveal their actual wallet
+- This can just plug into Sound L for the zk proof part
+- They generate a zk proof confirming attendance  
+- The proof can later be redeemed for community perks, gated content, or reputation. Without linking to their wallet identity.
 
 ### SL Integration  
-zkBeacon Fair Draw leverages the **Soundness Layer** to:  
-- Verify zk proofs that winners were computed correctly from `{secret, public_beacon, participant_list}`.  
-- Store and verify artifacts (participant list hash, proof, public inputs) using SL validators.  
-- Issue decentralized attestations confirming the fairness of each draw.  
-
-Key SL features:  
-- **Proof-agnostic verification** (supporting SNARKs/STARKs depending on prover).  
-- **Blob storage integration with Walrus** for participants and proofs.  
-- **Attestation IDs** for traceability and independent verification.  
+PoP can run on top of Sound Layer by using it to handle the zk proofs plus  verification
+- This can just plug into SL for the zk proof part  
+- Users later use SL to generate zk proof that they are in the set of attendees 
+- Verifier contract on SL checks proof before giving access or reward 
 
 ## Technical  
 
 ### Architecture  
-1. Organizer commits to a participant list and private seed.  
-2. After registration closes, an unpredictable beacon (e.g., drand output) is published.  
-3. A zk prover calculates the winner indices using the formula:   index_i = SHA256(secret || beacon || i) mod N
-with rejection sampling to avoid duplicates.  
-4. Proof and public inputs are uploaded to Walrus.  
-5. Soundness Layer verifies the zk proof and issues an attestation ID.  
-6. Frontend displays winners along with verifiable proof artifacts.  
+- Front End = QR scan or code input
+- Back End = Add commitment to set
+- Sound Layer = generate + verify ZK proof 
+- Smart Contract = Checks proof before reward or access
 
 ### Stack  
-- **Frontend**: React + Vite  
-- **Backend/Prover**: Rust (SP1 zkVM with Groth16 BN254 export)  
-- **Blockchain / Verification**: Soundness Layer  
-- **Storage**: Walrus (proofs, inputs, participant CSV), IPFS (optional backup)  
+- Front End: react (or just simple web) 
+- Backend: node or express 
+- Smart Contract: solidity  
+- ZK: handled with Sound Layer SDK 
 
 ### Features  
-1. Transparent winner selection using public randomness  
-2. zk-proof based verification of results  
-3. Decentralized attestation for trustless validation  
+- Private check in with QR or a code
+- ZK proof of attendance
+- Works for rewards and/or gated channels
+- Can scale to multiple events
 
 ## Timeline  
 
 ### PoC (2–4 weeks)  
-- Prototype the draw algorithm inside SP1 zkVM (hash → mod → uniqueness check).  
-- Produce initial zk proofs and run verification through local tooling.  
-- Store early artifacts (proof + participant commitments) in Walrus.  
-- Connect output to Soundness Layer for a first attestation.  
-- Deliver a bare-bones results page to showcase proof + winners.  
+- 1 event only. QR code  
+- User gets in the set  
+- Later can prove on Sound  Layer 
+- Discord bot opens channel
 
 ### MVP (4–8 weeks)  
-- Introduce participant explorer: map indices back to entries in the committed list.  
-- Wrap the proving + upload process into a one-step organizer command.  
-- Enrich developer docs with flow diagrams and sample runs.  
-- Run a small closed test with mock participants to validate end-to-end flow.  
+- Same flow but cleaned up UI  
+- Multiple events supported  
+- Rewards like NFT badge  
+
 
 
 ## Innovation  
-zkBeacon Fair Draw combines **commit–reveal** with **public randomness** and zero-knowledge verification, eliminating trust in the organizer’s execution environment.  
-- Proofs are validator-verified and stored permanently.  
-- Results are reproducible, censorship-resistant, and bias-free.  
-- Unlike typical online giveaways, it guarantees transparency and auditability through cryptography.  
+- Most check in systems leak wallet history 
+- this one keeps it private using zk plus Sound Layer  
+- Its like a Proof of Attendance Protocol but without the tracking
 
 ## Contact  
 - **Discord**: @hikikomori6969  
